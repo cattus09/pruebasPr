@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Tickets</title>
+</head>
+<body>
+    <h1>Lista de Tickets</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Fecha de Creación</th>
+                <th>Estado</th>
+                <th>Proveedor</th>
+                <th>Correo Proveedor</th>
+                <th>Dueño de la Marca</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="ticketsTable">
+            <!-- Aquí se cargarán dinámicamente los tickets -->
+        </tbody>
+    </table>
+
+    <script>
+        // Función para cargar los tickets desde el backend
+        function cargarTickets() {
+            fetch('/tickets/todos')
+            .then(response => response.json())
+            .then(tickets => {
+                var ticketsTable = document.getElementById("ticketsTable");
+                ticketsTable.innerHTML = '';
+                tickets.forEach(ticket => {
+                    var row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${ticket.id}</td>
+                        <td>${new Date(ticket.fechaCreacion).toLocaleString()}</td>
+                        <td>${ticket.estadoTicket}</td>
+                        <td>${ticket.proveedor}</td>
+                        <td>${ticket.correoProveedor}</td>
+                        <td>${ticket.dueñoMarca}</td>
+                        <td>
+                            <button onclick="aceptarTicket('${ticket.id}')">Aceptar</button>
+                            <button onclick="cerrarTicket('${ticket.id}')">Cerrar</button>
+                        </td>
+                    `;
+                    ticketsTable.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Función para aceptar un ticket
+        function aceptarTicket(id) {
+            var ticket = {
+                estadoTicket: 'aceptado',
+                proveedor: '...',
+                correoProveedor: '...',
+                dueñoMarca: '...'
+            };
+            fetch(`/tickets/aceptar/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(ticket)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al aceptar el ticket');
+                }
+                cargarTickets(); // Vuelve a cargar la lista de tickets después de aceptar uno
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Función para cerrar un ticket
+        function cerrarTicket(id) {
+            fetch(`/tickets/cerrar/${id}`, {
+                method: 'PUT'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al cerrar el ticket');
+                }
+                cargarTickets(); // Vuelve a cargar la lista de tickets después de cerrar uno
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Cargar los tickets al cargar la página
+        cargarTickets();
+    </script>
+</body>
+</html>

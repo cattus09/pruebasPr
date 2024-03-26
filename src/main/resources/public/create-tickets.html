@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Tickets</title>
+</head>
+<body>
+    <h1>Crear Tickets</h1>
+    <textarea id="urls" rows="5" cols="50" placeholder="Ingrese las URLs aquí"></textarea>
+    <br>
+    <button onclick="crearTickets()">Crear Tickets</button>
+
+    <script>
+        function crearTickets() {
+            var urls = document.getElementById("urls").value.split("\n");
+            // Envía las URLs al backend para crear los tickets
+            fetch('/tickets/crear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(urls)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al crear los tickets');
+                }
+                // Redirecciona a la página de visualización de tickets
+                window.location.href = '/tickets';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
